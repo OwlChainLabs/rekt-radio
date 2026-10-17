@@ -103,7 +103,7 @@ canvas{display:block;width:100%;height:340px}
   <div class="how">
     <div><b><i style="background:var(--r)"></i>longs liquidated</b>Red bars hang down. Bigger bar, deeper and louder bass hit.</div>
     <div><b><i style="background:var(--g)"></i>shorts liquidated</b>Green bars stand up. They play as high notes on top of the beat.</div>
-    <div><b><i style="background:var(--fg)"></i>whale wipeouts</b>Cascades over $1M stop the track for a drop and a banner.</div>
+    <div><b><i style="background:var(--fg)"></i>whale wipeouts</b>Cascades over $1M hit a drop and a banner while the beat keeps going.</div>
   </div>
 
   <div class="share"><a class="btn" id="shareX" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8.1-9.3L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.4 3.9H5.4L17.7 20Z"/></svg>post today's rekt count</a><a class="btn" href="https://liquidate.fun" target="_blank" rel="noopener">open liquidate.fun ↗</a></div>
@@ -176,19 +176,19 @@ function bass(t,amt,note){const o=ac.createOscillator(),o2=ac.createOscillator()
   o.type="sawtooth";o2.type="square";o.frequency.value=fr;o2.frequency.value=fr/2;f.type="lowpass";f.frequency.setValueAtTime(200+amt*2600,t);f.frequency.exponentialRampToValueAtTime(120,t+.35);f.Q.value=8;
   env(g,t,.004,.18+amt*.32,.3+amt*.25);o.connect(f);o2.connect(f);f.connect(g);g.connect(comp);o.start(t);o2.start(t);o.stop(t+.8);o2.stop(t+.8)}
 function pluck(t,amt,note){const o=ac.createOscillator(),g=ac.createGain();o.type="triangle";o.frequency.value=440*Math.pow(2,note/12);env(g,t,.003,.06+amt*.16,.22+amt*.2);o.connect(g);g.connect(comp);g.connect(verb);o.start(t);o.stop(t+.6)}
-function boom(t){kick(t,1.6);const o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(30,t+1.2);env(g,t,.01,.9,1.3);o.connect(g);g.connect(comp);o.start(t);o.stop(t+1.5);clap(t)}
+function boom(t){kick(t,1.4);const o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(35,t+.6);env(g,t,.01,.7,.6);o.connect(g);g.connect(comp);o.start(t);o.stop(t+.8);clap(t)}
 function riser(t,d){const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=noise();s.loop=true;f.type="bandpass";f.frequency.setValueAtTime(400,t);f.frequency.exponentialRampToValueAtTime(7000,t+d);
   g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.18,t+d);g.gain.setValueAtTime(0,t+d);s.connect(f);f.connect(g);g.connect(comp);s.start(t);s.stop(t+d+.05)}
-let mxL=1,mxS=1,bigSet=new Set(),hold=0;
+let mxL=1,mxS=1,bigSet=new Set(),dropAt=-1,lastDrop=-99;
 function prep(){const b=data.buckets;mxL=Math.max(...b.map(v=>v.l),1);mxS=Math.max(...b.map(v=>v.s),1);
   bigSet=new Set();const thr=Math.max(1e6,Math.max(mxL,mxS)*.45);b.forEach((v,i)=>{if(v.l>=thr||v.s>=thr)bigSet.add(i)})}
 function sched(){while(nextT<ac.currentTime+.12){const t=nextT,s16=step%16;
-    if(hold>0){hold--;if(hold===0){boom(t)}nextT+=SIX;step++;continue}
+    if(step===dropAt)boom(t);
     if(s16%4===0)kick(t);if(s16%4===2)hat(t,.14);else hat(t,.05);if(s16===4||s16===12)clap(t);
     if(step%2===0){idx++;const b=data.buckets;if(idx>=b.length){finish();return}
       const v=b[idx],ui=idx;setTimeout(()=>{if(!playing)return;nowTxt(ui)},Math.max(0,(t-ac.currentTime)*1000));
-      if(bigSet.has(idx)&&step>8){riser(t,SIX*16);hold=16;const side=v.l>=v.s?"long":"short",amt=Math.max(v.l,v.s);
-        setTimeout(()=>{if(playing)banner(side,amt)},Math.max(0,(t+SIX*16-ac.currentTime)*1000));nextT+=SIX;step++;continue}
+      if(bigSet.has(idx)&&step>8&&idx-lastDrop>12){lastDrop=idx;riser(t,SIX*4);const side=v.l>=v.s?"long":"short",amt=Math.max(v.l,v.s),tb=t+SIX*4;
+        dropAt=step+4;setTimeout(()=>{if(playing)banner(side,amt)},Math.max(0,(tb-ac.currentTime)*1000))}
       const p=v.p,dir=idx>0?Math.sign(p-b[idx-1].p):0,base=dir<0?0:dir>0?2:1;
       if(v.l){const a=Math.sqrt(v.l/mxL);bass(t,a,MINOR[(base+Math.floor(a*3))%5]-12);if(a>.5)bass(t+SIX,a*.7,MINOR[base%5]-12)}
       else if(step%8===0)bass(t,.08,0-12);
@@ -197,8 +197,8 @@ function sched(){while(nextT<ac.currentTime+.12){const t=nextT,s16=step%16;
 function nowTxt(i){const v=data.buckets[i];const tm=new Date(v.t).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
   $("nowL").innerHTML=`<b>${tm}</b> · ${data.coin} $${v.p>1000?Math.round(v.p).toLocaleString("en"):v.p.toFixed(2)}`;
   $("nowR").innerHTML=(v.l?`<span class="red">${usd(v.l)} longs</span>`:"")+(v.l&&v.s?" · ":"")+(v.s?`<span class="grn">${usd(v.s)} shorts</span>`:"")||"quiet"}
-function banner(side,amt){const b=$("banner");b.style.color=side==="long"?"var(--r)":"var(--g)";b.innerHTML=`<small>${side}s wiped out</small>${usd(amt)} REKT`;b.classList.add("on");flash=.35;shake=16;setTimeout(()=>b.classList.remove("on"),1800)}
-async function play(){setup();await ac.resume();if(!data)return;prep();idx=-1;step=0;hold=0;nextT=ac.currentTime+.08;playing=true;$("play").textContent="■ stop";timer=setInterval(sched,25)}
+function banner(side,amt){const b=$("banner");b.style.color=side==="long"?"var(--r)":"var(--g)";b.innerHTML=`<small>${side}s wiped out</small>${usd(amt)} REKT`;b.classList.add("on");flash=.35;shake=16;setTimeout(()=>b.classList.remove("on"),1300)}
+async function play(){setup();await ac.resume();if(!data)return;prep();idx=-1;step=0;dropAt=-1;lastDrop=-99;nextT=ac.currentTime+.08;playing=true;$("play").textContent="■ stop";timer=setInterval(sched,25)}
 function stop(){playing=false;clearInterval(timer);$("play").textContent="▶ play last 24h"}
 function finish(){stop();const b=data.buckets;banner("long",b.reduce((a,v)=>a+v.l+v.s,0));$("banner").innerHTML=`<small>24h total wiped out</small>${usd(b.reduce((a,v)=>a+v.l+v.s,0))}`;idx=-1}
 $("play").onclick=()=>playing?stop():play();

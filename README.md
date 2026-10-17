@@ -6,7 +6,7 @@ hear traders get rekt. the last 24 hours of liquidations, played as a track.
 
 - red bars hang down: longs liquidated, played as deep bass hits
 - green bars stand up: shorts liquidated, played as high notes
-- whale wipeouts over $1M stop the track for a drop and a banner
+- whale wipeouts over $1M hit a drop and a banner while the beat keeps going
 - btc and sol, refreshed every minute
 
 ## data
