@@ -16,7 +16,7 @@ export default {
         if (!r.ok) throw new Error(String(r.status));
         const j = await r.json();
         const body = { coin: j.coin, now: j.now, buckets: j.buckets || [], highlights: j.highlights || [] };
-        const res = Response.json(body, { headers: { "cache-control": "public, max-age=60" } });
+        const res = Response.json(body, { headers: { "cache-control": "public, max-age=60", "access-control-allow-origin": "*" } });
         ctx.waitUntil(cache.put(cacheKey, res.clone()));
         return res;
       } catch {
