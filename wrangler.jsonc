@@ -1,0 +1,7 @@
+{
+  "name": "rekt-radio",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-06-01",
+  // only the website folder is published
+  "assets": { "directory": "./public", "binding": "ASSETS" }
+}
