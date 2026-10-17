@@ -4,6 +4,8 @@ hear traders get rekt. the last 24 hours of liquidations, played as a track.
 
 **try it: [rekt.owlchainlabs.xyz](https://rekt.owlchainlabs.xyz)**
 
+![rekt radio demo](./demo.gif)
+
 - red bars hang down: longs liquidated, played as deep bass hits
 - green bars stand up: shorts liquidated, played as high notes
 - whale wipeouts over $1M hit a drop and a banner while the beat keeps going
