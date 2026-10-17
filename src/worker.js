@@ -8,7 +8,11 @@ export default {
       const cacheKey = new Request(`https://liq-cache/${c}`);
       const cache = caches.default;
       const hit = await cache.match(cacheKey);
-      if (hit) return hit;
+      if (hit) {
+        const h = new Response(hit.body, hit);
+        h.headers.set("access-control-allow-origin", "*");
+        return h;
+      }
       try {
         const r = await fetch(`https://liquidate.fun/api/timeline?c=${c}`, {
           headers: { "user-agent": "owlchainlabs rekt-radio (github.com/OwlChainLabs/rekt-radio)" },
